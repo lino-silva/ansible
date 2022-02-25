@@ -1,10 +1,8 @@
 - hosts: all
   become: 'yes'
+  vars_files: 
+    - pi-vars.yml
   vars:
-    user:
-      - name: REDACTED
-        password: REDACTED
-        ssh_key: REDACTED
     base_packages:
       - vim
       - wget

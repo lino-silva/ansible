@@ -1,0 +1,4 @@
+user:
+  - name: REDACTED
+    password: REDACTED
+    ssh_key: REDACTED
