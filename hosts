@@ -1,0 +1,7 @@
+[raspberries]
+10.0.0.XX
+
+[raspberries:vars]
+ansible_connection=ssh
+ansible_user=pi
+ansible_ssh_pass=raspberry

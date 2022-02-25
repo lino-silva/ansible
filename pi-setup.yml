@@ -1,0 +1,75 @@
+- hosts: all
+  become: 'yes'
+  vars:
+    user:
+      - name: REDACTED
+        password: REDACTED
+        ssh_key: REDACTED
+    base_packages:
+      - vim
+      - wget
+      - curl
+      - htop
+    docker_deps:
+      - libffi-dev
+      - libssl-dev
+      - python3
+      - python3-pip
+
+  tasks:
+    - name: Change password for default user
+      user:
+        name: "{{ item.name }}"
+        password: "{{ item.password | password_hash('sha512') }}"
+        state: present
+      loop: "{{ user }}"
+
+    - name: Add SSH public key
+      authorized_key:
+        user: "{{ item.name }}"
+        key: "{{ item.ssh_key }}"
+      loop: "{{ user }}"
+
+    - name: Ensure a list of packages installed
+      apt:
+        name:  "{{ base_packages }}"
+        state: present
+
+    - name: Ensure docker dependencies are installed
+      apt:
+        name: "{{ docker_deps }}"
+        state: present
+
+    - name: Remove python-configparser package
+      apt:
+        name: python-configparser
+        state: absent
+
+    - name: get docker convenience script
+      shell: curl -fsSL https://get.docker.com -o get-docker.sh
+      args:
+        creates: /home/pi/get-docker.sh
+
+    - name: install docker
+      shell: sh /home/pi/get-docker.sh
+      args:
+        creates: /usr/bin/docker
+
+    - name: make pi user execute docker commands
+      shell: usermod -aG docker pi
+
+    - name: install docker-compose
+      shell: pip3 -v install docker-compose
+      args:
+        creates: /usr/local/bin/docker-compose
+
+    - name: Remove useless packages from the cache
+      apt:
+        autoclean: yes
+    - name: Remove dependencies that are no longer required
+      apt:
+        autoremove: yes
+
+    - name: All done!
+      debug:
+        msg: Packages have been successfully installed
